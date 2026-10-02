@@ -1,0 +1,20 @@
+{
+  "id": 10,
+  "title": "Room Climate Hub Adaptive Scheduling",
+  "repository_slug": "room-climate-hub-adaptive-scheduling",
+  "category": "Smart Home",
+  "platform": "Home Assistant + ESPHome",
+  "platform_family": "esphome",
+  "difficulty": "Intermediate",
+  "estimated_hours": 24,
+  "connectivity": "Matter",
+  "components": [
+    "light sensor",
+    "BME280"
+  ],
+  "scope": "Build a smart home prototype that uses light sensor, BME280 to adjust schedules from occupancy patterns. Include setup instructions, a circuit diagram, tested firmware, and sample output.",
+  "key_deliverable": "Adaptive Scheduling demonstration with repeatable test steps",
+  "mode": "closed_loop_control",
+  "entrypoint": "firmware/device.yaml",
+  "roadmap_source": "openmaker-2100-project-roadmap.xlsx"
+}
