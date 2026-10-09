@@ -1,9 +1,2 @@
 # Architecture
-
-```text
-Sensors -> validation and filtering -> closed loop control -> output/alert
-                                      |
-                                      +-> Matter telemetry and logs
-```
-
-The implementation separates acquisition, decision logic, output handling, and telemetry. Hardware-specific access is kept at the edge so the core behavior can be tested with simulated readings.
+Home Assistant clock and explicit occupancy helper feed ESPHome via native API. One 24-element persistent float table learns occupancy for each local clock hour: new=old+(occupied-old)/60 per valid minute. BME280 and BH1750 influence the schedule recommendation. LED on only if data valid, lux<100, occupancy currently true or learned score≥0.35, temperature<30C and humidity<80%. Invalid clock/API/sensor data turns off. Matterbridge-hass exports selected Home Assistant entities to Matter. No direct ESPHome Matter stack or inferred occupancy from environmental readings is claimed.

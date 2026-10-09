@@ -1,7 +1,6 @@
-__pycache__/
-*.py[cod]
-.env
-.vscode/
-.idea/
+.esphome/
 .pio/
-build/
+firmware/secrets.yaml
+__pycache__/
+*.pyc
+.env

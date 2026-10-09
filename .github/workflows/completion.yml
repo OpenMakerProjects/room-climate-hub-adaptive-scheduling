@@ -1,9 +1,9 @@
-name: Validate project
+name: Completion gates
 on: [push, pull_request]
 permissions:
   contents: read
 jobs:
-  validate:
+  host-board:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -12,6 +12,11 @@ jobs:
           python-version: '3.12'
       - run: |
           python tools/validate.py
-          python -m unittest discover -s tests
           g++ -std=c++17 tests/schedule_test.cpp -o /tmp/schedule
           /tmp/schedule
+          python -m unittest discover -s tests
+          python tools/validate_completion.py
+          pip install esphome==2026.9.1
+          cp firmware/secrets.example.yaml firmware/secrets.yaml
+          esphome config firmware/device.yaml
+          esphome compile firmware/device.yaml
