@@ -1,48 +1,92 @@
-substitutions:
-  device_name: room-climate-hub-adaptive-sched
-  friendly_name: "Room Climate Hub Adaptive Scheduling"
-
 esphome:
-  name: ${device_name}
-
+  name: room-climate-adaptive
+  friendly_name: Room Climate Adaptive
+  includes: [schedule.h]
 esp32:
   board: esp32dev
   framework:
-    type: arduino
-
+    type: esp-idf
 logger:
 api:
+  id: api_server
 ota:
   - platform: esphome
-
 wifi:
   ssid: !secret wifi_ssid
   password: !secret wifi_password
-  ap:
-    ssid: "${friendly_name} Setup"
-
-captive_portal:
-
+preferences:
+  flash_write_interval: 1h
+i2c:
+  sda: GPIO21
+  scl: GPIO22
+  scan: true
+time:
+  - platform: homeassistant
+    id: clock
+globals:
+  - id: hourly
+    type: float[24]
+    restore_value: true
+    initial_value: '{0}'
+  - id: lux_at
+    type: uint32_t
+    initial_value: '0'
+  - id: climate_at
+    type: uint32_t
+    initial_value: '0'
+binary_sensor:
+  - platform: homeassistant
+    id: occupied
+    entity_id: input_boolean.room_climate_occupied
+    internal: true
 sensor:
-  - platform: adc
-    pin: GPIO34
-    name: "Primary input"
-    id: primary_input
-    update_interval: 1s
-    attenuation: auto
-
+  - platform: bh1750
+    id: lux
+    name: Illuminance
+    address: 0x23
+    update_interval: 30s
+    on_value:
+      then:
+        - lambda: 'id(lux_at) = millis();'
+  - platform: bme280_i2c
+    address: 0x76
+    temperature:
+      id: temperature
+      name: Temperature
+      on_value:
+        then:
+          - lambda: 'id(climate_at) = millis();'
+    humidity:
+      id: humidity
+      name: Humidity
+    pressure:
+      name: Pressure
+    update_interval: 30s
+  - platform: template
+    id: occupancy_score
+    name: Hourly Occupancy Score
+    accuracy_decimals: 3
+    update_interval: never
 output:
   - platform: gpio
-    pin: GPIO2
-    id: status_output
-
+    id: permission_led
+    pin: GPIO25
+light:
+  - platform: binary
+    id: scheduled_light
+    name: Schedule Permission
+    output: permission_led
+    restore_mode: ALWAYS_OFF
 interval:
-  - interval: 1s
+  - interval: 60s
     then:
-      - if:
-          condition:
-            lambda: return id(primary_input).state >= 0.55f;
-          then:
-            - output.turn_on: status_output
-          else:
-            - output.turn_off: status_output
+      - lambda: |-
+          auto t = id(clock).now();
+          bool valid = t.is_valid() && id(api_server).is_connected() && id(occupied).has_state()
+            && uint32_t(millis()-id(lux_at))<120000 && uint32_t(millis()-id(climate_at))<120000;
+          if (!valid) { id(scheduled_light).turn_off().perform(); return; }
+          int h = t.hour;
+          id(hourly)[h] = learn(id(hourly)[h], id(occupied).state);
+          id(occupancy_score).publish_state(id(hourly)[h]);
+          bool on = recommend(valid,id(occupied).state,id(hourly)[h],id(lux).state,id(temperature).state,id(humidity).state);
+          if(on) id(scheduled_light).turn_on().perform(); else id(scheduled_light).turn_off().perform();

@@ -1,16 +1,2 @@
-# Wiring guide
-
-This is a low-voltage prototype wiring plan for **Room Climate Hub Adaptive Scheduling**. Confirm every module's datasheet because breakout-board pinouts vary.
-
-| Component | Suggested pin | Role | Check |
-| --- | --- | --- | --- |
-| light sensor | A2 | Analog input | Confirm the module voltage and pinout before power-up. |
-| BME280 | 4 | Digital I/O | Confirm the module voltage and pinout before power-up. |
-| Status output | LED_BUILTIN | Output | Use a resistor when an external LED is fitted. |
-
-## Power
-
-- Use a regulated supply sized for the selected modules.
-- Join grounds unless an interface is explicitly isolated.
-- Do not connect mains voltage directly to a development board.
-- Add a fuse, emergency stop, and certified isolation where a real actuator can create risk.
+# Wiring and assembly
+ESP32 DevKit GPIO21 SDA/GPIO22 SCL connect both BME280 0x76 and BH1750 0x23. Both VCC at 3.3V, both GND common. BME CSB to3.3V, SDO toGND; BH ADDR toGND. Breakout I2C pullups must connect to3.3V, not5V. GPIO25 through330Ω to LED anode; cathodeGND. USB5V powers DevKit onboard regulator. With power disconnected, join grounds, rails then signals; verify addresses in I2C scan. See [editable diagram](circuit-diagram.svg). Never connect mains or HVAC equipment.

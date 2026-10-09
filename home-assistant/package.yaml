@@ -1,0 +1,7 @@
+input_boolean:
+  room_climate_occupied:
+    name: Room Climate Occupied
+    icon: mdi:account
+# Set this helper manually for a repeatable demonstration.
+# Optionally connect an existing validated occupancy sensor through an automation.
+# Do not claim that BME280/BH1750 alone measure occupancy.
