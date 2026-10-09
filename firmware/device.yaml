@@ -22,7 +22,7 @@ i2c:
   scan: true
 time:
   - platform: homeassistant
-    id: clock
+    id: ha_time
 globals:
   - id: hourly
     type: float[24]
@@ -81,7 +81,7 @@ interval:
   - interval: 60s
     then:
       - lambda: |-
-          auto t = id(clock).now();
+          auto t = id(ha_time).now();
           bool valid = t.is_valid() && id(api_server).is_connected() && id(occupied).has_state()
             && uint32_t(millis()-id(lux_at))<120000 && uint32_t(millis()-id(climate_at))<120000;
           if (!valid) { id(scheduled_light).turn_off().perform(); return; }
