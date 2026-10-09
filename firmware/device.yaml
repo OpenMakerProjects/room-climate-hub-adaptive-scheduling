@@ -25,7 +25,7 @@ time:
     id: ha_time
 globals:
   - id: hourly
-    type: float[24]
+    type: std::array<float, 24>
     restore_value: true
     initial_value: '{0}'
   - id: lux_at
